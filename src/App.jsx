@@ -5,6 +5,8 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeService, setActiveService] = useState(0);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);  
+   const [submitError, setSubmitError] = useState('');  
 
   useEffect(() => {
     const handleScroll = () => {
@@ -73,12 +75,49 @@ export default function App() {
     }
   ];
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
+  // REPLACE lines 78-83 in your App.jsx with this:
+
+const handleFormSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setSubmitError('');
+
+  const formData = new FormData(e.target);
+  const data = {
+    name: formData.get('name'),
+    email: formData.get('email'),
+    phone: formData.get('phone') || '',
+    service: formData.get('service'),
+    message: formData.get('message')
+  };
+
+  try {
+    const response = await fetch('http://localhost:5000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to submit form');
+    }
+
+    // Success!
     setFormSubmitted(true);
     setTimeout(() => setFormSubmitted(false), 5000);
     e.target.reset();
-  };
+    
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    setSubmitError(error.message || 'Failed to send message. Please try again or email us directly.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#0A1A2F] text-[#EAEAEA] overflow-x-hidden">
@@ -354,7 +393,7 @@ export default function App() {
                     ))}
 
                     {/* Connection Nodes */}
-                    {[60, 90, 120, 150].map((radius, rIndex) => 
+                    {[60, 90, 120, 150].flatMap((radius, rIndex) => 
                       [...Array(8)].map((_, index) => (
                         <circle
                           key={`${rIndex}-${index}`}
@@ -477,7 +516,7 @@ export default function App() {
         `}</style>
       </section>
 
-{/* Google-Quality Technology Showcase with Advanced 3D Effects */}
+      {/* Google-Quality Technology Showcase with Advanced 3D Effects */}
       <section className="relative py-24 px-6 bg-gradient-to-b from-[#0A1A2F] via-[#0f1f35] to-[#142D4C]/30 overflow-hidden">
         {/* Multi-layered Ambient Background */}
         <div className="absolute inset-0 opacity-30">
@@ -1163,8 +1202,9 @@ export default function App() {
           </div>
         </div>
       </section>
-{/* Value Propositions Section with Animation */}
-<section className="relative py-20 px-6 bg-gradient-to-r from-[#142D4C]/50 to-[#0A1A2F]/50">
+
+      {/* Value Propositions Section with Animation */}
+      <section className="relative py-20 px-6 bg-gradient-to-r from-[#142D4C]/50 to-[#0A1A2F]/50">
   <div className="max-w-7xl mx-auto">
     <div className="grid md:grid-cols-4 gap-8 text-center">
       <div className="space-y-2 group cursor-pointer">
@@ -1420,7 +1460,7 @@ export default function App() {
         </div>
       </section>
 
-{/* Enhanced Testimonials Section - Senior Level */}
+      {/* Enhanced Testimonials Section - Senior Level */}
       <section id="testimonials" className="relative py-20 px-6 overflow-hidden">
         {/* Sophisticated Background */}
         <div className="absolute inset-0 pointer-events-none">
